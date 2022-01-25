@@ -2,6 +2,7 @@ name: Update
 on:
   schedule:
     - cron: '0 12-23/2 * * *'
+  workflow_dispatch:
 jobs:
   update:
     name: check, update and commit
@@ -24,8 +25,8 @@ jobs:
       - name: git status
         id: git-status
         run: |
-          git config --global user.email "covid19-bot@example.com"
-          git config --global user.name "covid19-bot"
+          git config --global user.email "mauriforonda+socialdatos@gmail.com"
+          git config --global user.name "sociedatosbot"
           echo ::set-output name=result::$(git status | tr -d "\n" | grep -c "nothing to commit")
       - name: commit
         if: steps.git-status.outputs.result == 0
