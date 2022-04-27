@@ -25,7 +25,9 @@ def get_last(fn):
     return pd.read_csv(fn, parse_dates=[0], index_col=0).index[-1].date()
 
 def normie(text):
-    return unicodedata.normalize(u'NFKD', ' '.join(text.lower().split())).encode('ascii', 'ignore').decode('utf8')
+    if text != None:
+        return unicodedata.normalize(u'NFKD', ' '.join(text.lower().split())).encode('ascii', 'ignore').decode('utf8')
+    else: return ""
 
 def is_diario(text):
     return len(re.findall('.*casos confirmados, fallecidos y recuperados por departamento por dia, del [0-9\/]*', text)) != 0
