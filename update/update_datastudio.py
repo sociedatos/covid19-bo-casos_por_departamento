@@ -100,8 +100,23 @@ def update_latest(table):
         latest = table_latest
 
 def print_latest(latest):
+    """
+    Print the latest update date to format the commit message
+    """
     print(latest.strftime('%Y-%m-%d'))
-        
+
+def save(table, query):
+    """
+    Save cumulative datasets as they are, but only append 
+    new lines to daily ones.
+    """
+    
+    if 'diario' in query:
+        old_table= pd.read_csv('{}.csv'.format(query), parse_dates=[0], index_col=0)
+        newlines = table.loc[old_table.index.max() + dt.timedelta(days=1):]
+        table = pd.concat([old_table, newlines])
+    table.to_csv('{}.csv'.format(query))
+    
 def update_dataset(query):
     """
     Update a dataset
@@ -112,7 +127,7 @@ def update_dataset(query):
     table = build_table(json.loads(response.text[6:]))
     table = make_table_consistent(table)
     update_latest(table)
-    table.to_csv('{}.csv'.format(query))
+    save(table, query)
 
 latest = pd.Timestamp(year=2020, month=3, day=3)
 end_date = yesterday()
