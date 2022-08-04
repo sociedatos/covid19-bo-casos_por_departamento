@@ -9,14 +9,14 @@ def yesterday():
     """
     Get yesterday in the right format
     """
-    
+
     return (dt.datetime.now().date() - dt.timedelta(days=1)).strftime('%Y%m%d')
 
 def load_query(query, end_date):
     """
     Load datastudio query, update `end_date`
     """
-    
+
     with open('update/queries/{}.json'.format(query), 'r') as f:
         json_data = json.load(f)
         json_data['dataRequest'][0]['datasetSpec']['dateRanges'][0]['endDate'] = end_date
@@ -53,40 +53,40 @@ def extract_values(columns):
     """
     Get values from the datastudio response
     """
-    
+
     values = []
-    
+
     for col in columns:
         valuecol = [k for k in col.keys() if 'Column' in k][0]
         values.append(col[valuecol]['values'])
-    
+
     return values
 
 def build_table(json_data, column_names=['fecha', 'departamento', 'casos']):
     """
     Format values in datastudio response into a nice table
     """
-    
+
     columns = json_data['dataResponse'][0]['dataSubset'][0]['dataset']['tableDataset']['column']
     values = extract_values(columns)
     df = pd.DataFrame(values).T
     df.columns = column_names
     df['fecha'] = pd.to_datetime(df['fecha'])
-    df['departamento'] = df['departamento'].astype('category')
+    # df['departamento'] = df['departamento'].astype('category')
     df['casos'] = df['casos'].astype(int)
-    return df    
+    return df
 
 def make_table_consistent(table):
     """
     Make the table consistent with our older format
     """
-    
+
     column_order = ['Chuquisaca', 'La Paz', 'Cochabamba', 'Oruro', 'Potosí', 'Tarija', 'Santa Cruz', 'Beni', 'Pando']
 
     table = table.pivot_table(index='fecha', columns='departamento', values='casos')
     table = table[column_order]
     table.index = table.index.set_names('')
-    
+
     return table
 
 def update_latest(table):
@@ -107,16 +107,16 @@ def print_latest(latest):
 
 def save(table, query):
     """
-    Save cumulative datasets as they are, but only append 
+    Save cumulative datasets as they are, but only append
     new lines to daily ones.
     """
-    
+
     if 'diario' in query:
         old_table= pd.read_csv('{}.csv'.format(query), parse_dates=[0], index_col=0)
         newlines = table.loc[old_table.index.max() + dt.timedelta(days=1):]
         table = pd.concat([old_table, newlines])
     table.to_csv('{}.csv'.format(query))
-    
+
 def update_dataset(query):
     """
     Update a dataset
@@ -141,4 +141,4 @@ for query in ['confirmados_diarios',
               'recuperados_acumulados']:
     update_dataset(query)
 
-print_latest(latest)    
+print_latest(latest)
